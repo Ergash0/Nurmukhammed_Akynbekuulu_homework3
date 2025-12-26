@@ -1,38 +1,46 @@
 package com.framework.tests;
 
 import com.framework.base.BaseTest;
-import org.openqa.selenium.Alert;
-import org.openqa.selenium.By;
-import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.WebElement;
+import com.framework.pages.AlertPage;
+import io.qameta.allure.Description;
+import io.qameta.allure.Step;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
-public class AlertTests extends BaseTest { // Наследуемся от BaseTest
+public class AlertTests extends BaseTest {
 
-    @Test
+    @Test(description = "Verify alert with text box works correctly")
+    @Description("Test opens alert with textbox, sends input and verifies result message")
     public void verifyAlertWithTextBox() {
-        WebDriver driver = getDriver();
-        driver.get("https://demo.automationtesting.in/Alerts.html");
+        // Используем getDriver() вместо driver
+        getDriver().get("https://demo.automationtesting.in/Alerts.html");
+        AlertPage alertPage = new AlertPage(getDriver());
 
         String inputName = "Nurmukhammed_Akynbekuulu";
 
-        driver.findElement(By.cssSelector("a[href='#Textbox']")).click();
+        openAlertTab(alertPage);
+        clickPromptButton(alertPage);
+        sendTextToAlert(alertPage, inputName);
 
-        driver.findElement(By.cssSelector("button[onclick='promptbox()']")).click();
+        String actualResult = alertPage.getResultText();
+        String expectedText = "Hello " + inputName + " How are you today";
 
-        Alert alert = driver.switchTo().alert();
+        Assert.assertTrue(actualResult.contains(expectedText),
+                "Expected text '" + expectedText + "' was not found in: " + actualResult);
+    }
 
-        alert.sendKeys(inputName);
+    @Step("Open Alert with Text Box tab")
+    public void openAlertTab(AlertPage page) {
+        page.openAlertWithTextBoxTab();
+    }
 
-        alert.accept();
+    @Step("Click Prompt Box button")
+    public void clickPromptButton(AlertPage page) {
+        page.clickPromptBoxButton();
+    }
 
-        WebElement resultElement = driver.findElement(By.cssSelector("#demo1"));
-        String actualResultText = resultElement.getText();
-
-        String expectedTextPart = "Hello " + inputName + " How are you today";
-
-        Assert.assertTrue(actualResultText.contains(expectedTextPart),
-                "Ожидаемый текст '" + expectedTextPart + "' не найден в результате: " + actualResultText);
+    @Step("Send text '{text}' to alert")
+    public void sendTextToAlert(AlertPage page, String text) {
+        page.enterTextInAlert(text);
     }
 }
